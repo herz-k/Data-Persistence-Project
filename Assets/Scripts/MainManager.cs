@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -24,6 +25,7 @@ public class MainManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        bestScoreText.text = "The Best score is " + PlayerPrefs.GetString("HighScoreName_0") + ": " + PlayerPrefs.GetInt("HighScore_0");
         playerName = GameManager.instance.playerName;
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
@@ -84,10 +86,59 @@ public class MainManager : MonoBehaviour
         }
         
         bestScoreText.text = "The Best score is " + PlayerPrefs.GetString("HighScoreName_0") + ": " + PlayerPrefs.GetInt("HighScore_0");
+
+        AddScoreToLeaderboard(playerName, m_Points);
     }
     public class PlayerScore
     {
         public string playerName;
         public int score;
+    }
+
+    void SaveLeaderboard(List<PlayerScore> leaderboard)
+    {
+        for (int i = 0; i < leaderboard.Count; i++)
+        {
+            PlayerPrefs.SetString("LeaderboardName_" + i, leaderboard[i].playerName);
+            PlayerPrefs.SetInt("LeaderboardScore_" + i, leaderboard[i].score);
+        }
+
+        PlayerPrefs.SetInt("LeaderboardCount", leaderboard.Count);
+        PlayerPrefs.Save();
+    }
+
+    List<PlayerScore> LoadLeaderboard()
+    {
+        List<PlayerScore> leaderboard = new List<PlayerScore>();
+        int count = PlayerPrefs.GetInt("LeaderboardCount", 0);
+
+        for (int i = 0; i < count; i++)
+        {
+            string playerName = PlayerPrefs.GetString("LeaderboardName_" + i, "");
+            int score = PlayerPrefs.GetInt("LeaderboardScore_" + i, 0);
+
+            PlayerScore playerScore = new PlayerScore { playerName = playerName, score = score };
+            leaderboard.Add(playerScore);
+        }
+
+        return leaderboard;
+    }
+    void AddScoreToLeaderboard(string playerName, int m_Points)
+    {
+        List<PlayerScore> leaderboard = LoadLeaderboard();
+
+        PlayerScore newScore = new PlayerScore();
+        newScore.playerName = playerName;
+        newScore.score = m_Points;
+        leaderboard.Add(newScore);
+
+        leaderboard.Sort((x, y) => y.score.CompareTo(x.score));
+
+        if (leaderboard.Count > 10)
+        {
+            leaderboard = leaderboard.Take(10).ToList();
+        }
+
+        SaveLeaderboard(leaderboard);
     }
 }

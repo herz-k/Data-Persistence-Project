@@ -4,6 +4,9 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class MenuUI : MonoBehaviour
 {
@@ -31,5 +34,24 @@ public class MenuUI : MonoBehaviour
     {
         playerName = name;
         Debug.Log(playerName);
+    }
+
+
+    public void LeaderBoardMenu()
+    {
+        SceneManager.LoadScene(2);
+    }
+
+    public void MainMenu()
+    {
+        SceneManager.LoadScene(0);
+    }
+    public void Exit()
+    {
+#if UNITY_EDITOR
+        EditorApplication.ExitPlaymode();
+#else
+        Application.Quit();
+#endif
     }
 }
